@@ -1,6 +1,6 @@
-name: Build ENet
+name: Build ENet with CMake
 
-on:
+on: 
   push:
     branches:
       - master
@@ -9,32 +9,29 @@ on:
       - master
 
 jobs:
-  build:
+  cmake-build:
     runs-on: windows-latest
 
     steps:
-      # Checkout the code from your repository
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-      # Set up MSYS2 to install tools
-      - name: Set up MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: 'mingw-w64-x86_64-toolchain, autoconf, automake, make'
+    # Install dependencies
+    - name: Install CMake and build tools
+      run: |
+        choco install cmake # Für Windows
+        sudo apt-get install cmake g++ make # Für Linux
 
-      # Run the build steps
-      - name: Build ENet
-        run: |
-          cd enet  # We assume the ENet repo is in the 'enet' folder
-          autoreconf -i
-          ./configure
-          make
+    # Konfiguriere CMake
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
 
-      # Upload the resulting DLL as an artifact (Updated to latest version)
-      - name: Upload ENet DLL
-        uses: actions/upload-artifact@latest
-        with:
-          name: enet-dll
-          path: enet/.libs/enet.dll  # Passe den Pfad je nach Ergebnis an
+    # Baue ENet
+    - name: Build ENet
+      run: cmake --build build --config Release
+
+    # Lade die DLL als Artefakt hoch
+    - name: Upload ENet DLL
+      uses: actions/upload-artifact@v3
+      with:
+        name: enet-dll
+        path: build/bin/enet.dll
