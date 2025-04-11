@@ -1,0 +1,40 @@
+name: Build ENet
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # Checkout the code from your repository
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      # Set up MSYS2 to install tools
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: 'mingw-w64-x86_64-toolchain, autoconf, automake, make'
+
+      # Run the build steps
+      - name: Build ENet
+        run: |
+          cd enet  # We assume the ENet repo is in the 'enet' folder
+          autoreconf -i
+          ./configure
+          make
+
+      # Upload the resulting DLL as an artifact
+      - name: Upload ENet DLL
+        uses: actions/upload-artifact@v2
+        with:
+          name: enet-dll
+          path: enet/.libs/enet.dll  # Passe den Pfad je nach Ergebnis an
