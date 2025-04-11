@@ -1,5 +1,4 @@
 name: Build ENet with CMake
-
 on: 
   push:
     branches:
@@ -7,31 +6,24 @@ on:
   pull_request:
     branches:
       - master
-
 jobs:
   cmake-build:
     runs-on: windows-latest
-
     steps:
-    - uses: actions/checkout@v3
-
+    - uses: actions/checkout@v4
     # Install dependencies
     - name: Install CMake and build tools
       run: |
-        choco install cmake # Für Windows
-        sudo apt-get install cmake g++ make # Für Linux
-
-    # Konfiguriere CMake
+        choco install cmake
+    # Configure CMake
     - name: Configure CMake
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release
-
-    # Baue ENet
+    # Build ENet
     - name: Build ENet
       run: cmake --build build --config Release
-
-    # Lade die DLL als Artefakt hoch
+    # Upload the DLL as artifact
     - name: Upload ENet DLL
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: enet-dll
         path: build/bin/enet.dll
