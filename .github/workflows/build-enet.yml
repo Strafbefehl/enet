@@ -6,40 +6,50 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:  # Allow manual triggering
+
 jobs:
-  cmake-build:
+  build-enet:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v4
+    # Checkout your repository
+    - name: Checkout Repository
+      uses: actions/checkout@v4
     
-    # Install CMake
-    - name: Install CMake
-      run: choco install cmake
+    # Clone the ENet repository
+    - name: Clone ENet Repository
+      run: git clone https://github.com/lsalzman/enet.git
     
-    # Configure CMake
-    - name: Configure CMake
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+    # Setup Visual Studio environment
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
     
-    # Build ENet
-    - name: Build ENet
-      run: cmake --build build --config Release
-    
-    # Find the DLL
-    - name: Find DLL location
+    # Configure and build ENet using CMake
+    - name: Configure and Build ENet
       run: |
-        echo "Looking for the ENet DLL..."
-        dir /s build\*.dll
-        echo "=========="
-        dir /s *.dll
+        cd enet
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+        cmake --build . --config Release
+    
+    # List all files to see what was produced
+    - name: List output files
+      run: |
+        echo "Listing all files in enet/build directory..."
+        dir /s enet\build\*.*
       shell: cmd
     
-    # Upload the DLL as artifact (using a more flexible path)
-    - name: Upload ENet DLL
+    # Upload all potential DLL files and additional outputs
+    - name: Upload ENet outputs
       uses: actions/upload-artifact@v4
       with:
-        name: enet-dll
+        name: enet-build-outputs
         path: |
-          build/**/*.dll
-          build/Release/*.dll
-          build/bin/Release/*.dll
+          enet/build/**/*.dll
+          enet/build/**/*.lib
+          enet/build/Release/*.dll
+          enet/build/Release/*.lib
+          enet/build/bin/Release/*.dll
+          enet/build/**/*.so
         if-no-files-found: warn
