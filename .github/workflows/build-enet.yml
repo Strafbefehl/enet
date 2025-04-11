@@ -32,9 +32,9 @@ jobs:
           ./configure
           make
 
-      # Upload the resulting DLL as an artifact (Updated to v3)
+      # Upload the resulting DLL as an artifact (Updated to latest version)
       - name: Upload ENet DLL
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@latest
         with:
           name: enet-dll
           path: enet/.libs/enet.dll  # Passe den Pfad je nach Ergebnis an
