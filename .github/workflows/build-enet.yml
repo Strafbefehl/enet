@@ -1,4 +1,4 @@
-name: Build ENet with CMake
+name: Build ENet for LÖVE2D
 on: 
   push:
     branches:
@@ -11,19 +11,35 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
-    # Install dependencies
-    - name: Install CMake and build tools
-      run: |
-        choco install cmake
+    
+    # Install CMake
+    - name: Install CMake
+      run: choco install cmake
+    
     # Configure CMake
     - name: Configure CMake
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+    
     # Build ENet
     - name: Build ENet
       run: cmake --build build --config Release
-    # Upload the DLL as artifact
+    
+    # Find the DLL
+    - name: Find DLL location
+      run: |
+        echo "Looking for the ENet DLL..."
+        dir /s build\*.dll
+        echo "=========="
+        dir /s *.dll
+      shell: cmd
+    
+    # Upload the DLL as artifact (using a more flexible path)
     - name: Upload ENet DLL
       uses: actions/upload-artifact@v4
       with:
         name: enet-dll
-        path: build/bin/enet.dll
+        path: |
+          build/**/*.dll
+          build/Release/*.dll
+          build/bin/Release/*.dll
+        if-no-files-found: warn
